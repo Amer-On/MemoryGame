@@ -196,7 +196,15 @@ public:
 
 		if (card1 == card2) {
 			cout << "Congradulations! The cards are equal!" << "\n";
-			allCards.erase(allCards.begin() + card1 - 1);
+			int idOfCard;
+			for (int i = 0; i < allCards.size(); i++) {
+				if (allCards[i] == card1) {
+					idOfCard = i;
+					break;
+				}
+			}
+
+			allCards.erase(allCards.begin() + idOfCard);
 			if (allCards.size() == 0) {
 				return true;
 			}
