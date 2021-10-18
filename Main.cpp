@@ -5,6 +5,10 @@
 
 using namespace std;
 
+/*
+	by Amer On (Alexey Oleynik)
+	https://github.com/Amer-On/MemoryGame
+*/
 
 // dumb method to clear the console
 void ClearScreen() {
@@ -70,20 +74,22 @@ public:
 		}
 	}
 
+private:
 	int takeCard(int position) {
+		int card = cards[position];
 		cards.erase(cards.begin() + position);
-		return cards[position];
+		return card;
 	}
 
 	int takeCard() {return takeCard((int) (rand() % cards.size()));}
 
-private:
 	void printVector(vector<int> v) {
 		for (int i = 0; i < v.size(); i++)
 			cout << v[i] << " ";
 		cout << "\n";
 	}
 
+	// TODO: print field considering to the size of val (to make the field look symmetrical)
 	void printField(vector<vector<int> > field) {
 		cout << "\n";
 		for (int i = 0; i < height; i++) {
@@ -94,6 +100,7 @@ private:
 		cout << "\n";
 	}
 
+// some helping funcs to print data properly
 public:
 	void printCards() {printVector(cards);}
 
@@ -102,6 +109,16 @@ public:
 	void printGameField() {printField(gameField);}
 
 	void printActualGameField() {printField(actualGameField);}
+
+private:
+	int turnOverCard(int x, int y) {
+		if (x >= 0 and x < width and y >= 0 and y < height) {
+			if (actualGameField[y][x] == 0)
+				return gameField[y][x];
+		}
+		throw runtime_error("Invalid coordinates");
+	}
+
 
 	void readFirstCoords() {
 		try {
@@ -112,7 +129,7 @@ public:
 			x1 = readIntFromString(x);
 			y1 = readIntFromString(y);
 		} catch (const runtime_error& e) {
-			cout << "Please enter numbers instead of text";
+			cout << "Please enter numbers instead of text" << "\n";
 			readFirstCoords();
 		}
 	}
@@ -125,7 +142,7 @@ public:
 			x2 = readIntFromString(x);
 			y2 = readIntFromString(y);
 		} catch (const runtime_error& e) {
-			cout << "Please enter numbers instead of text";
+			cout << "Please enter numbers instead of text" << "\n";
 			readSecondCoords();
 		}
 	}
@@ -146,6 +163,7 @@ public:
 		}
 	}
 
+public:
 	bool pickCards() {
 		cout << "Enter coordinates of the first card: ";
 		readFirstCoords();
@@ -188,15 +206,6 @@ public:
 		}
 
 	}
-
-
-	int turnOverCard(int x, int y) {
-		if (x >= 0 and x < width and y >= 0 and y < height) {
-			if (actualGameField[y][x] == 0)
-				return gameField[y][x];
-		}
-		throw runtime_error("Invalid coordinates");
-	}
 };
 
 // run the game
@@ -222,6 +231,19 @@ bool playAgain() {
 	else return playAgain();
 }
 
+int inputLimit() {
+	try {
+		string input;
+		cin >> input;
+		cout << "\n";
+
+		return readIntFromString(input);
+	} catch (const runtime_error& e) {
+		cout << "Please enter a number instead of text: ";
+		return inputLimit();
+	}
+}
+
 
 int main()
 {
@@ -233,16 +255,11 @@ int main()
 	int width = 6;
 	cout << "The size of the field is " << height << " x " << width << "\n";
 
-	string input;
 	cout << "Please enter the amount of attempts you want to have: ";
-	cin >> input;
-	cout << "\n";
 
-	int limit = readIntFromString(input);
-	if (limit < 1) {
-		main(); 
-		return 0;
-	}
+
+	// TODO: try catch
+	int limit = inputLimit();
 
 	while (true) {
 		Field field(height, width);
