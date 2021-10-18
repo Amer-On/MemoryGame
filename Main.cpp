@@ -257,8 +257,6 @@ int main()
 
 	cout << "Please enter the amount of attempts you want to have: ";
 
-
-	// TODO: try catch
 	int limit = inputLimit();
 
 	while (true) {
