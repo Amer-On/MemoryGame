@@ -171,7 +171,10 @@ public:
 		try {
 			card1 = turnOverCard(x1, y1);
 		} catch (const runtime_error& e) {
-			cout << "Please enter valid coordinates" << "\n";
+			cout << "Please enter valid coordinates\n\n";
+			return pickCards();
+		} catch (const exception& e) {
+			cout << "You already opened this card, please choose another one\n\n";
 			return pickCards();
 		}
 		
@@ -235,7 +238,7 @@ int inputLimit() {
 
 // help player with input format
 void printInputFormat(int width, int height) {
-	cout << "\nThe input format of variables\n\nFirstly you type in x coordinate, ";
+	cout << "\nThe input format of coordinates\n\nFirstly you type in x coordinate, ";
 	cout << "then you type in y coordinate using space as a limiter\n";
 	cout << "Left bottom corner has coordinates (1, 1), ";
 	cout << "top right corner has coordinates (" << width << ", " << height << ")" << "\n\n"; 
