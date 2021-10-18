@@ -43,7 +43,6 @@ private:
 	int height, width;
 
 	vector<int> cards;
-	vector<int> allCards;
 	int cardsLeft;
 
 public:
@@ -51,14 +50,13 @@ public:
 		height = fieldHeight;
 		width = fieldWidth;
 
+		cardsLeft = fieldWidth * fieldHeight / 2;
+
 		// generate cards
 		for (int i = 0; i < fieldWidth * fieldHeight / 2; i++) {
 			cards.push_back(i + 1);
 			cards.push_back(i + 1);
-			allCards.push_back(i + 1);
 		}
-
-		cardsLeft = allCards.size();
 
 		// generate field
 		vector<int> row;
@@ -111,8 +109,6 @@ private:
 // some helping funcs to print data properly
 public:
 	void printCards() {printVector(cards);}
-
-	void printAllCards() {printVector(allCards);}
 
 	void printActualGameField() {printField(actualGameField);}
 
