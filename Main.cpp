@@ -44,8 +44,6 @@ private:
 
 	vector<int> cards;
 	vector<int> allCards;
-	
-	int x1, y1, x2, y2;
 
 public:
 	Field(int fieldHeight, int fieldWidth) {
@@ -120,53 +118,42 @@ private:
 	}
 
 
-	void readFirstCoords() {
+	void readCoords(int *x, int *y) {
 		try {
-			string x, y;
+			string inputX, inputY;
 			
-			cin >> x >> y;
+			cin >> inputX >> inputY;
 
-			x1 = readIntFromString(x);
-			y1 = readIntFromString(y);
+			*x = readIntFromString(inputX);
+			*y = readIntFromString(inputY);
 		} catch (const runtime_error& e) {
 			cout << "Please enter numbers instead of text" << "\n";
-			readFirstCoords();
+			readCoords(&*x, &*y);
 		}
 	}
 
-	void readSecondCoords() {
-		try {
-			string x, y;
-			cin >> x >> y;
+	int pickSecondCard(int x1, int y1, int *x2, int *y2) {
+		readCoords(&*x2, &*y2);
 
-			x2 = readIntFromString(x);
-			y2 = readIntFromString(y);
-		} catch (const runtime_error& e) {
-			cout << "Please enter numbers instead of text" << "\n";
-			readSecondCoords();
-		}
-	}
-
-	int pickSecondCard() {
-		readSecondCoords();
-
-		if (x2 == x1 && y1 == y2) {
+		if (*x2 == x1 && *y2 == y1) {
 			cout << "The coordinates of the cards are equal, please enter different coordinates" << "\n";
-			return pickSecondCard();
+			return pickSecondCard(x1, y1, &*x2, &*y2);
 		}
 
 		try {
-			return turnOverCard(x2, y2);
+			return turnOverCard(*x2, *y2);
 		} catch (const runtime_error& e) {
 			cout << "Please enter valid coordinates" << "\n";
-			return pickSecondCard();
+			return pickSecondCard(x1, y1, &*x2, &*y2);
 		}
 	}
 
 public:
 	bool pickCards() {
 		cout << "Enter coordinates of the first card: ";
-		readFirstCoords();
+		
+		int x1, y1;
+		readCoords(&x1, &y1);
 		int card1;
 
 		try {
@@ -183,7 +170,8 @@ public:
 		printActualGameField();
 
 		cout << "Enter coordinates of the second card: ";
-		int card2 = pickSecondCard();
+		int x2, y2;
+		int card2 = pickSecondCard(x1, y1, &x2, &y2);
 		ClearScreen();
 		
 		actualGameField[y2][x2] = gameField[y2][x2];
@@ -218,7 +206,6 @@ bool execute(Field field, int limit) {
 	return false;
 }
 
-// play the game once more/no
 bool playAgain() {
 	string answer;
 	cout << "\n" << "Play again? (y/n)" << "\n";
@@ -263,6 +250,7 @@ int main()
 		Field field(height, width);
 		bool win = execute(field, limit);
 		cout << "\n\n";
+
 		if (win)
 			cout << "Congradulations! You have a great memory!\nWant to play again?\n";
 		else 
