@@ -73,6 +73,11 @@ public:
 	}
 
 private:
+
+	int translateX(int x) {return x + 1;}
+
+	int translateY(int y) {return height - y;}
+
 	int takeCard(int position) {
 		int card = cards[position];
 		cards.erase(cards.begin() + position);
@@ -98,13 +103,13 @@ private:
 		cout << "\n";
 	}
 
+	void printGameField() {printField(gameField);}
+
 // some helping funcs to print data properly
 public:
 	void printCards() {printVector(cards);}
 
 	void printAllCards() {printVector(allCards);}
-
-	void printGameField() {printField(gameField);}
 
 	void printActualGameField() {printField(actualGameField);}
 
@@ -113,8 +118,9 @@ private:
 		if (x >= 0 and x < width and y >= 0 and y < height) {
 			if (actualGameField[y][x] == 0)
 				return gameField[y][x];
-		}
-		throw runtime_error("Invalid coordinates");
+			else 
+				throw logic_error("Card already opened");
+		} else throw runtime_error("Invalid coordinates");
 	}
 
 
@@ -130,6 +136,9 @@ private:
 			cout << "Please enter numbers instead of text" << "\n";
 			readCoords(&*x, &*y);
 		}
+
+		*x -= 1;
+		*y = height - *y;
 	}
 
 	int pickSecondCard(int x1, int y1, int *x2, int *y2) {
@@ -144,6 +153,9 @@ private:
 			return turnOverCard(*x2, *y2);
 		} catch (const runtime_error& e) {
 			cout << "Please enter valid coordinates" << "\n";
+			return pickSecondCard(x1, y1, &*x2, &*y2);
+		} catch (const exception& e) {
+			cout << "You already opened this card, please enter another coordinates" << "\n";
 			return pickSecondCard(x1, y1, &*x2, &*y2);
 		}
 	}
@@ -166,7 +178,7 @@ public:
 		ClearScreen();
 
 		actualGameField[y1][x1] = gameField[y1][x1];
-		cout << "Coordinates of the card: " << x1 << " " << y1 << "\n";
+		cout << "Coordinates of the card: " << translateX(x1) << " " << translateY(y1) << "\n";
 		printActualGameField();
 
 		cout << "Enter coordinates of the second card: ";
@@ -175,8 +187,8 @@ public:
 		ClearScreen();
 		
 		actualGameField[y2][x2] = gameField[y2][x2];
-		cout << "Coordinates of the first card: " << x1 << " " << y1 << "\n";
-		cout << "Coordinates of the second card: " << x2 << " " << y2 << "\n";
+		cout << "Coordinates of the first card: " << translateX(x1) << " " << translateY(y1) << "\n";
+		cout << "Coordinates of the second card: " << translateX(x2) << " " << translateY(y2) << "\n";
 		printActualGameField();
 
 		if (card1 == card2) {
@@ -196,24 +208,14 @@ public:
 	}
 };
 
-// run the game
-bool execute(Field field, int limit) {
-	for (int attemp = 0; attemp < limit; attemp++) {
-		if (field.pickCards())
-			return true;
-	}
-	cout << "\n" <<"!!!You have ran out of attempts!!!" << "\n";
-	return false;
-}
-
 bool playAgain() {
-	string answer;
+	string wantsToReplay;
 	cout << "\n" << "Play again? (y/n)" << "\n";
-	cin >> answer;
+	cin >> wantsToReplay;
 
-	if (answer == "n")
+	if (wantsToReplay == "n")
 		return false;
-	else if (answer == "y") 
+	else if (wantsToReplay == "y") 
 		return true;
 	else return playAgain();
 }
@@ -231,6 +233,24 @@ int inputLimit() {
 	}
 }
 
+// help player with input format
+void printInputFormat(int width, int height) {
+	cout << "\nThe input format of variables\n\nFirstly you type in x coordinate, ";
+	cout << "then you type in y coordinate using space as a limiter\n";
+	cout << "Left bottom corner has coordinates (1, 1), ";
+	cout << "top right corner has coordinates (" << width << ", " << height << ")" << "\n\n"; 
+}
+
+// run the game
+bool execute(Field field, int limit) {
+	for (int attemp = 0; attemp < limit; attemp++) {
+		if (field.pickCards())
+			return true;
+		cout << limit - attemp - 1 << " attempts left\n";
+	}
+	cout << "\n!!!You have ran out of attempts!!!\n";
+	return false;
+}
 
 int main()
 {
@@ -245,6 +265,9 @@ int main()
 	cout << "Please enter the amount of attempts you want to have: ";
 
 	int limit = inputLimit();
+
+	// print the format of input
+	printInputFormat(width, height);
 
 	while (true) {
 		Field field(height, width);
