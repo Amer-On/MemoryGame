@@ -44,6 +44,7 @@ private:
 
 	vector<int> cards;
 	vector<int> allCards;
+	int cardsLeft;
 
 public:
 	Field(int fieldHeight, int fieldWidth) {
@@ -56,6 +57,8 @@ public:
 			cards.push_back(i + 1);
 			allCards.push_back(i + 1);
 		}
+
+		cardsLeft = allCards.size();
 
 		// generate field
 		vector<int> row;
@@ -194,20 +197,12 @@ public:
 		cout << "Coordinates of the second card: " << translateX(x2) << " " << translateY(y2) << "\n";
 		printActualGameField();
 
+		// TODO: remove card after it's found
 		if (card1 == card2) {
 			cout << "Congradulations! The cards are equal!" << "\n";
-			int idOfCard;
-			for (int i = 0; i < allCards.size(); i++) {
-				if (allCards[i] == card1) {
-					idOfCard = i;
-					break;
-				}
-			}
-
-			allCards.erase(allCards.begin() + idOfCard);
-			if (allCards.size() == 0) {
+			cardsLeft -= 1;
+			if (cardsLeft == 0)
 				return true;
-			}
 			return false;
 		} else {
 			actualGameField[y1][x1] = 0;
