@@ -35,8 +35,9 @@ int readIntFromString(string text) {
 	return number;
 }
 
+
 // the field class, which rules the game
-class Field {
+class Game {
 private:
 	vector<vector<int> > gameField;
 	vector<vector<int> > actualGameField;
@@ -46,7 +47,7 @@ private:
 	int cardsLeft;
 
 public:
-	Field(int fieldHeight, int fieldWidth) {
+	Game(int fieldHeight, int fieldWidth) {
 		height = fieldHeight;
 		width = fieldWidth;
 
@@ -250,7 +251,7 @@ void printInputFormat(int width, int height) {
 }
 
 // run the game
-bool execute(Field field, int limit) {
+bool execute(Game field, int limit) {
 	for (int attemp = 0; attemp < limit; attemp++) {
 		if (field.pickCards())
 			return true;
@@ -278,7 +279,7 @@ int main()
 	printInputFormat(width, height);
 
 	while (true) {
-		Field field(height, width);
+		Game field(height, width);
 		bool win = execute(field, limit);
 		cout << "\n\n";
 
