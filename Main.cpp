@@ -70,11 +70,11 @@ public:
 			actualGameField.push_back(rowForAct);
 			gameField.push_back(row);
 			row.clear();
+			rowForAct.clear();
 		}
 	}
 
 private:
-
 	int translateX(int x) {return x + 1;}
 
 	int translateY(int y) {return height - y;}
@@ -87,32 +87,41 @@ private:
 
 	int takeCard() {return takeCard((int) (rand() % cards.size()));}
 
+public:
 	void printVector(vector<int> v) {
 		for (int i = 0; i < v.size(); i++)
 			cout << v[i] << " ";
 		cout << "\n";
 	}
 
-	// TODO: print field considering to the size of val (to make the field look symmetrical)
 	void printField(vector<vector<int> > field) {
 		cout << "\n";
+		string output = "";
+		int spacesArray[height][width];
+		int number;
+
 		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++)
-				cout << field[i][j] << "  ";
-			cout << "\n";
+			for (int j = 0; j < width; j++) {
+				number = field[i][j];
+				if (number / 10 > 0)
+					output += to_string(number) + " ";
+				else
+					output += to_string(number) + "  ";
+			}
+			output += "\n";
 		}
+
+		cout << output;
 		cout << "\n";
 	}
 
-	void printGameField() {printField(gameField);}
-
-// some helping funcs to print data properly
-public:
 	void printCards() {printVector(cards);}
 
 	void printActualGameField() {printField(actualGameField);}
 
 private:
+	void printGameField() {printField(gameField);}
+
 	int turnOverCard(int x, int y) {
 		if (x >= 0 and x < width and y >= 0 and y < height) {
 			if (actualGameField[y][x] == 0)
@@ -248,7 +257,7 @@ bool execute(Field field, int limit) {
 	for (int attemp = 0; attemp < limit; attemp++) {
 		if (field.pickCards())
 			return true;
-		cout << limit - attemp - 1 << " attempts left\n";
+		cout << limit - attemp - 1 << " attempts left\n\n";
 	}
 	cout << "\n!!!You have ran out of attempts!!!\n";
 	return false;
@@ -278,8 +287,10 @@ int main()
 
 		if (win)
 			cout << "Congradulations! You have a great memory!\nWant to play again?\n";
-		else 
-			cout << "This time you got unlucky :c\nBut you still have a chance to beat this game!\nWant to play again?\n";
+		else {
+			cout << "This time you got unlucky :c\n"
+			cout << "But you still have a chance to beat this game!\nWant to play again?\n";
+		}
 		
 		if (!playAgain()) {
 			cout << "\n" <<"Hope you have spent your time nicely, see you soon c:" << "\n";
