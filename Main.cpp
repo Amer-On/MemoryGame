@@ -11,7 +11,7 @@ using namespace std;
 */
 
 // dumb method to clear the console
-void ClearScreen() {
+void clearScreen() {
 	for (int i = 0; i < 10; i++) {
 		cout << "\n\n\n\n\n\n\n\n\n\n";
 	}
@@ -183,7 +183,7 @@ public:
 			return pickCards();
 		}
 		
-		ClearScreen();
+		clearScreen();
 
 		actualGameField[y1][x1] = gameField[y1][x1];
 		cout << "Coordinates of the card: " << translateX(x1) << " " << translateY(y1) << "\n";
@@ -192,7 +192,7 @@ public:
 		cout << "Enter coordinates of the second card: ";
 		int x2, y2;
 		int card2 = pickSecondCard(x1, y1, &x2, &y2);
-		ClearScreen();
+		clearScreen();
 		
 		actualGameField[y2][x2] = gameField[y2][x2];
 		cout << "Coordinates of the first card: " << translateX(x1) << " " << translateY(y1) << "\n";
