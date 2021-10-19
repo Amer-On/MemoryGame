@@ -87,7 +87,6 @@ private:
 
 	int takeCard() {return takeCard((int) (rand() % cards.size()));}
 
-public:
 	void printVector(vector<int> v) {
 		for (int i = 0; i < v.size(); i++)
 			cout << v[i] << " ";
@@ -119,7 +118,6 @@ public:
 
 	void printActualGameField() {printField(actualGameField);}
 
-private:
 	void printGameField() {printField(gameField);}
 
 	int turnOverCard(int x, int y) {
@@ -130,7 +128,6 @@ private:
 				throw logic_error("Card already opened");
 		} else throw runtime_error("Invalid coordinates");
 	}
-
 
 	void readCoords(int *x, int *y) {
 		try {
@@ -286,12 +283,12 @@ int main()
 		cout << "\n\n";
 
 		if (win)
-			cout << "Congradulations! You have a great memory!\nWant to play again?\n";
+			cout << "Congratulations! You have a great memory!\nWant to play again?\n";
 		else {
-			cout << "This time you got unlucky :c\n"
+			cout << "This time you got unlucky :c\n";
 			cout << "But you still have a chance to beat this game!\nWant to play again?\n";
 		}
-		
+
 		if (!playAgain()) {
 			cout << "\n" <<"Hope you have spent your time nicely, see you soon c:" << "\n";
 			break;
