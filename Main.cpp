@@ -261,8 +261,7 @@ bool execute(Game field, int limit) {
 	return false;
 }
 
-int main()
-{
+int main() {
 	// random seed init
 	srand(static_cast<unsigned int>(time(0)));
 
