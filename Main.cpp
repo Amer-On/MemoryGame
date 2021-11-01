@@ -19,11 +19,11 @@ void clearScreen() {
 // the field class, which rules the game
 class Field {
 private:
-  // gameField contains all the right numbers, all the card values are visible
-	std::vector<std::vector<int> > gameField;
-  // observableField is the field the player is playing on. Only guessed cards are showed
-	std::vector<std::vector<int> > observableField;
 	int height, width;
+	// observableField is the field the player is playing on. Only guessed cards are showed
+	int **observableField;
+	// gameField contains all the right numbers, all the card values are visible
+	int **gameField;
 
 	std::vector<int> cards;
 	int cardsLeft;
@@ -41,23 +41,33 @@ public:
 			cards.push_back(i + 1);
 		}
 
-		// generate field
-		std::vector<int> row;
-		std::vector<int> rowForAct;
+		generateObservableGameField();
 
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				rowForAct.push_back(0);
-				row.push_back(takeCard());
-			}
-			observableField.push_back(rowForAct);
-			gameField.push_back(row);
-			row.clear();
-			rowForAct.clear();
-		}
+		generateGameField();
 	}
 
 private:
+	void generateGameField() {
+		gameField = new int*[height];
+
+		for (int i = 0; i < height; i++) {
+			gameField[i] = new int[width];
+			for (int j = 0; j < width; j++)
+				gameField[i][j] = takeCard();
+		}
+	}
+
+	void generateObservableGameField() {
+		observableField = new int*[height];
+
+		for (int i = 0; i < height; i++) {
+			observableField[i] = new int[width];
+			for (int j = 0; j < width; j++) 
+				observableField[i][j] = 0;
+			std::cout << "\n";
+		}
+	}
+
   // translate funcs to print out the coords in the way they are inputted
 	int translateX(int x) {return x + 1;}
 
@@ -77,7 +87,7 @@ private:
 		std::cout << "\n";
 	}
 
-	void printField(std::vector<std::vector<int> > field) {
+	void printField(int **field) {
 		std::cout << "\n";
 		std::string output = "";
 		int spacesArray[height][width];
@@ -114,22 +124,22 @@ private:
 
 	void readCoords(int *x, int *y) {
 		while (true) {
-		try {
-			int inputX, inputY;
-			
-			if (!(std::cin >> inputX >> inputY))
-				throw "Nan found";
+			try {
+				int inputX, inputY;
+				
+				if (!(std::cin >> inputX >> inputY))
+					throw "Nan found";
 
-			*x = inputX - 1;
-			*y = height - inputY;
-			break;
-		} catch (const char* e) {
-			std::cin.clear();
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-			std::cout << e << " Please use numbers instead of text";
+				*x = inputX - 1;
+				*y = height - inputY;
+				break;
+			} catch (const char* e) {
+				std::cin.clear();
+	      std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+				std::cout << e << " Please use numbers instead of text";
+			}
 		}
 	}
-}
 
 	int pickSecondCard(int x1, int y1, int *x2, int *y2) {
 		while (true) {
