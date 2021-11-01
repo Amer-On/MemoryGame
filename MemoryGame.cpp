@@ -133,7 +133,6 @@ private:
 	int height, width;
 	int limit;
 
-
 public:
 	Game(int fieldHeight, int fieldWidth, int attemptsLimit) {
 		height = fieldHeight;
@@ -297,9 +296,7 @@ int main() {
 	while (true) {
 		std::cout << "Please enter the amount of attempts you want to have: ";
 		int limit = inputLimit();
-
 		Game game(height, width, limit);
-		std::cout << "\n\n";
 
 		if (game.playGame(limit))
 			std::cout << "Congratulations! You have a great memory!\nWant to play again?\n";

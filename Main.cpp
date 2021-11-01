@@ -3,8 +3,6 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
 /*
 	by Amer On (Alexey Oleynik)
 	https://github.com/Amer-On/MemoryGame
@@ -13,41 +11,25 @@ using namespace std;
 // dumb method to clear the console
 void clearScreen() {
 	for (int i = 0; i < 10; i++) {
-		cout << "\n\n\n\n\n\n\n\n\n\n";
+		std::cout << "\n\n\n\n\n\n\n\n\n\n";
 	}
-}
-
-// parsing int numbers from the strings to avoid some problems with inputs
-int readIntFromString(string text) {
-	int number = 0;
-	bool hasNumber = false;
-
-	for (int i = 0; i < text.size(); i++) {
-		if (isdigit(text[i])) {
-			number = 10 * number + (int) text[i] - 48;
-			hasNumber = true;
-		}
-		else
-			break;
-	}
-	if (not hasNumber)
-		throw runtime_error("No number found");
-	return number;
 }
 
 
 // the field class, which rules the game
-class Game {
+class Field {
 private:
-	vector<vector<int> > gameField;
-	vector<vector<int> > actualGameField;
+  // gameField contains all the right numbers, all the card values are visible
+	std::vector<std::vector<int> > gameField;
+  // observableField is the field the player is playing on. Only guessed cards are showed
+	std::vector<std::vector<int> > observableField;
 	int height, width;
 
-	vector<int> cards;
+	std::vector<int> cards;
 	int cardsLeft;
 
 public:
-	Game(int fieldHeight, int fieldWidth) {
+	Field(int fieldHeight, int fieldWidth) {
 		height = fieldHeight;
 		width = fieldWidth;
 
@@ -60,15 +42,15 @@ public:
 		}
 
 		// generate field
-		vector<int> row;
-		vector<int> rowForAct;
+		std::vector<int> row;
+		std::vector<int> rowForAct;
 
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				rowForAct.push_back(0);
 				row.push_back(takeCard());
 			}
-			actualGameField.push_back(rowForAct);
+			observableField.push_back(rowForAct);
 			gameField.push_back(row);
 			row.clear();
 			rowForAct.clear();
@@ -76,6 +58,7 @@ public:
 	}
 
 private:
+  // translate funcs to print out the coords in the way they are inputted
 	int translateX(int x) {return x + 1;}
 
 	int translateY(int y) {return height - y;}
@@ -88,15 +71,15 @@ private:
 
 	int takeCard() {return takeCard((int) (rand() % cards.size()));}
 
-	void printVector(vector<int> v) {
+	void printVector(std::vector<int> v) {
 		for (int i = 0; i < v.size(); i++)
-			cout << v[i] << " ";
-		cout << "\n";
+			std::cout << v[i] << " ";
+		std::cout << "\n";
 	}
 
-	void printField(vector<vector<int> > field) {
-		cout << "\n";
-		string output = "";
+	void printField(std::vector<std::vector<int> > field) {
+		std::cout << "\n";
+		std::string output = "";
 		int spacesArray[height][width];
 		int number;
 
@@ -104,71 +87,71 @@ private:
 			for (int j = 0; j < width; j++) {
 				number = field[i][j];
 				if (number / 10 > 0)
-					output += to_string(number) + " ";
+					output += std::to_string(number) + " ";
 				else
-					output += to_string(number) + "  ";
+					output += std::to_string(number) + "  ";
 			}
 			output += "\n";
 		}
 
-		cout << output;
-		cout << "\n";
+		std::cout << output << "\n";
 	}
 
 	void printCards() {printVector(cards);}
 
-	void printActualGameField() {printField(actualGameField);}
+	void printActualGameField() {printField(observableField);}
 
 	void printGameField() {printField(gameField);}
 
 	int turnOverCard(int x, int y) {
 		if (x >= 0 and x < width and y >= 0 and y < height) {
-			if (actualGameField[y][x] == 0)
+			if (observableField[y][x] == 0)
 				return gameField[y][x];
 			else 
-				throw logic_error("Card already opened");
-		} else throw runtime_error("Invalid coordinates");
+				throw "Card already opened.";
+		} else throw "Invalid coordinates.";
 	}
 
 	void readCoords(int *x, int *y) {
+		while (true) {
 		try {
-			string inputX, inputY;
+			int inputX, inputY;
 			
-			cin >> inputX >> inputY;
+			if (!(std::cin >> inputX >> inputY))
+				throw "Nan found";
 
-			*x = readIntFromString(inputX);
-			*y = readIntFromString(inputY);
-		} catch (const runtime_error& e) {
-			cout << "Please enter numbers instead of text" << "\n";
-			readCoords(&*x, &*y);
+			*x = inputX - 1;
+			*y = height - inputY;
+			break;
+		} catch (const char* e) {
+			std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+			std::cout << e << " Please use numbers instead of text";
 		}
-
-		*x -= 1;
-		*y = height - *y;
 	}
+}
 
 	int pickSecondCard(int x1, int y1, int *x2, int *y2) {
-		readCoords(&*x2, &*y2);
+		while (true) {
+			readCoords(&*x2, &*y2);
 
-		if (*x2 == x1 && *y2 == y1) {
-			cout << "The coordinates of the cards are equal, please enter different coordinates" << "\n";
-			return pickSecondCard(x1, y1, &*x2, &*y2);
-		}
+			if (*x2 == x1 && *y2 == y1) {
+				std::cout << "The coordinates of the cards are equal, please enter different coordinates: ";
+				continue;
+			}
 
-		try {
-			return turnOverCard(*x2, *y2);
-		} catch (const runtime_error& e) {
-			cout << "Please enter valid coordinates" << "\n";
-			return pickSecondCard(x1, y1, &*x2, &*y2);
-		} catch (const exception& e) {
-			cout << "You already opened this card, please enter another coordinates" << "\n";
-			return pickSecondCard(x1, y1, &*x2, &*y2);
+			try {
+				return turnOverCard(*x2, *y2);
+			} catch (const char* e) {
+				std::cout << e << " Please enter another coordinates: ";
+			}
 		}
 	}
 
 public:
+  // the function to run the round
 	bool pickCards() {
-		cout << "Enter coordinates of the first card: ";
+		std::cout << "Enter coordinates of the first card: ";
 		
 		int x1, y1;
 		readCoords(&x1, &y1);
@@ -176,41 +159,38 @@ public:
 
 		try {
 			card1 = turnOverCard(x1, y1);
-		} catch (const runtime_error& e) {
-			cout << "Please enter valid coordinates\n\n";
+		} catch (const char* e) {
+			std::cout << e << "\n";
 			return pickCards();
-		} catch (const exception& e) {
-			cout << "You already opened this card, please choose another one\n\n";
-			return pickCards();
-		}
+		} 
 		
 		clearScreen();
 
-		actualGameField[y1][x1] = gameField[y1][x1];
-		cout << "Coordinates of the card: " << translateX(x1) << " " << translateY(y1) << "\n";
+		observableField[y1][x1] = gameField[y1][x1];
+		std::cout << "Coordinates of the card: " << translateX(x1) << " " << translateY(y1) << "\n";
 		printActualGameField();
 
-		cout << "Enter coordinates of the second card: ";
+		std::cout << "Enter coordinates of the second card: ";
 		int x2, y2;
 		int card2 = pickSecondCard(x1, y1, &x2, &y2);
 		clearScreen();
 		
-		actualGameField[y2][x2] = gameField[y2][x2];
-		cout << "Coordinates of the first card: " << translateX(x1) << " " << translateY(y1) << "\n";
-		cout << "Coordinates of the second card: " << translateX(x2) << " " << translateY(y2) << "\n";
+		observableField[y2][x2] = gameField[y2][x2];
+		std::cout << "Coordinates of the first card: " << translateX(x1) << " " << translateY(y1) << "\n";
+		std::cout << "Coordinates of the second card: " << translateX(x2) << " " << translateY(y2) << "\n";
 		printActualGameField();
 
 		// TODO: remove card after it's found
 		if (card1 == card2) {
-			cout << "Congradulations! The cards are equal!" << "\n";
+			std::cout << "Congradulations! The cards are equal!" << "\n";
 			cardsLeft -= 1;
 			if (cardsLeft == 0)
 				return true;
 			return false;
 		} else {
-			actualGameField[y1][x1] = 0;
-			actualGameField[y2][x2] = 0;
-			cout << "The cards differ!" << "\n";
+			observableField[y1][x1] = 0;
+			observableField[y2][x2] = 0;
+			std::cout << "The cards differ!" << "\n";
 			return false;
 		}
 
@@ -218,9 +198,9 @@ public:
 };
 
 bool playAgain() {
-	string wantsToReplay;
-	cout << "\n" << "Play again? (y/n)" << "\n";
-	cin >> wantsToReplay;
+	std::string wantsToReplay;
+	std::cout << "\n" << "Play again? (y/n)" << "\n";
+	std::cin >> wantsToReplay;
 
 	if (wantsToReplay == "n")
 		return false;
@@ -230,47 +210,53 @@ bool playAgain() {
 }
 
 int inputLimit() {
-	try {
-		string input;
-		cin >> input;
-		cout << "\n";
+	while (true) {
+		try {
+			int input;
+			if (!(std::cin >> input)) {
+				std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+				throw "Text entered instead of numbers.";
+			}
+			std::cout << "\n";
 
-		return readIntFromString(input);
-	} catch (const runtime_error& e) {
-		cout << "Please enter a number instead of text: ";
-		return inputLimit();
+			return input;
+		} catch (const char* e) {
+			std::cout << e << " Please use numbers: ";
+		}
 	}
 }
 
 // help player with input format
 void printInputFormat(int width, int height) {
-	cout << "\nThe input format of coordinates\n\nFirstly you type in x coordinate, ";
-	cout << "then you type in y coordinate using space as a limiter\n";
-	cout << "Left bottom corner has coordinates (1, 1), ";
-	cout << "top right corner has coordinates (" << width << ", " << height << ")" << "\n\n"; 
+	std::cout << "\nThe input format of coordinates\n\nFirstly you type in x coordinate, ";
+	std::cout << "then you type in y coordinate using space as a limiter\n";
+	std::cout << "Left bottom corner has coordinates (1, 1), ";
+	std::cout << "top right corner has coordinates (" << width << ", " << height << ")" << "\n\n"; 
 }
 
 // run the game
-bool execute(Game field, int limit) {
+bool execute(Field field, int limit) {
 	for (int attemp = 0; attemp < limit; attemp++) {
 		if (field.pickCards())
 			return true;
-		cout << limit - attemp - 1 << " attempts left\n\n";
+		std::cout << limit - attemp - 1 << " attempts left\n\n";
 	}
-	cout << "\n!!!You have ran out of attempts!!!\n";
+	std::cout << "\n!!!You have ran out of attempts!!!\n";
 	return false;
 }
 
-int main() {
+int main()
+{
 	// random seed init
 	srand(static_cast<unsigned int>(time(0)));
 
 	// sizes of the field, they are not customizable due to conditions of the task
 	int height = 4;
 	int width = 6;
-	cout << "The size of the field is " << height << " x " << width << "\n";
+	std::cout << "The size of the field is " << height << " x " << width << "\n";
 
-	cout << "Please enter the amount of attempts you want to have: ";
+	std::cout << "Please enter the amount of attempts you want to have: ";
 
 	int limit = inputLimit();
 
@@ -278,19 +264,19 @@ int main() {
 	printInputFormat(width, height);
 
 	while (true) {
-		Game field(height, width);
+		Field field(height, width);
 		bool win = execute(field, limit);
-		cout << "\n\n";
+		std::cout << "\n\n";
 
 		if (win)
-			cout << "Congratulations! You have a great memory!\nWant to play again?\n";
+			std::cout << "Congratulations! You have a great memory!\nWant to play again?\n";
 		else {
-			cout << "This time you got unlucky :c\n";
-			cout << "But you still have a chance to beat this game!\nWant to play again?\n";
+			std::cout << "This time you got unlucky :c\n";
+			std::cout << "But you still have a chance to beat this game!\nWant to play again?\n";
 		}
 
 		if (!playAgain()) {
-			cout << "\n" <<"Hope you have spent your time nicely, see you soon c:" << "\n";
+			std::cout << "\n" <<"Hope you have spent your time nicely, see you soon c:" << "\n";
 			break;
 		}
 	}
