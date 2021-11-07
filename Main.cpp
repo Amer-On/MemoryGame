@@ -1,6 +1,5 @@
 #include <iostream>
 #include <ctime>
-#include <vector>
 #include <string>
 
 /*
@@ -16,6 +15,70 @@ void clearScreen() {
 }
 
 
+class List {
+private:
+	int *list;
+	int size;
+
+public:
+	List() {
+		list = new int[0];
+		size = 0;
+	}
+
+	void add(int newEl) {
+		int *newList = new int[size + 1];
+		for (int i = 0; i < size; i++) {
+			newList[i] = list[i];
+		}
+
+		newList[size] = newEl;
+		list = newList;
+		delete [] newList;
+		size++;
+	}
+
+	void remove(int elToRem) {
+		int posToRem;
+		bool hasElToRem = false;
+
+		for (int i = 0; i < size; i++) {
+			if (list[i] == elToRem) {
+				hasElToRem = true;
+				posToRem = i;
+				break;
+			}
+		}
+
+		if (!hasElToRem)
+			return;
+		else extract(posToRem);
+	}
+
+	void extract(int position) {
+		int *newList = new int[size - 1];
+		for (int i = 0; i < position; i++)
+			newList[i] = list[i];
+		for (int i = position; i < size - 1; i++)
+			newList[i] = list[i + 1];
+
+		size -= 1;
+		list = newList;
+		delete [] newList;
+	}
+
+	int getSize() {
+		return size;
+	}
+
+	int getEl(int position) {
+		return list[position];
+	}
+};
+
+
+
+
 // the field class, which rules the game
 class Field {
 private:
@@ -25,8 +88,8 @@ private:
 	// gameField contains all the right numbers, all the card values are visible
 	int **gameField;
 
-	std::vector<int> cards;
 	int cardsLeft;
+	List cardsList;
 
 public:
 	Field(int fieldHeight, int fieldWidth) {
@@ -35,10 +98,11 @@ public:
 
 		cardsLeft = fieldWidth * fieldHeight / 2;
 
+		cardsList = List();
 		// generate cards
-		for (int i = 0; i < fieldWidth * fieldHeight / 2; i++) {
-			cards.push_back(i + 1);
-			cards.push_back(i + 1);
+		for (int i = 0; i < cardsLeft; i++) {
+			cardsList.add(i + 1);
+			cardsList.add(i + 1);
 		}
 
 		generateObservableGameField();
@@ -74,18 +138,13 @@ private:
 	int translateY(int y) {return height - y;}
 
 	int takeCard(int position) {
-		int card = cards[position];
-		cards.erase(cards.begin() + position);
+		int card = cardsList.getEl(position);
+		cardsList.extract(position);
 		return card;
 	}
 
-	int takeCard() {return takeCard((int) (rand() % cards.size()));}
+	int takeCard() {return takeCard((int) (rand() % cardsList.getSize()));}
 
-	void printVector(std::vector<int> v) {
-		for (int i = 0; i < v.size(); i++)
-			std::cout << v[i] << " ";
-		std::cout << "\n";
-	}
 
 	void printField(int **field) {
 		std::cout << "\n";
@@ -107,9 +166,7 @@ private:
 		std::cout << output << "\n";
 	}
 
-	void printCards() {printVector(cards);}
-
-	void printActualGameField() {printField(observableField);}
+	void printObservableField() {printField(observableField);}
 
 	void printGameField() {printField(gameField);}
 
@@ -117,93 +174,91 @@ private:
 		if (x >= 0 and x < width and y >= 0 and y < height) {
 			if (observableField[y][x] == 0)
 				return gameField[y][x];
-			else 
-				throw "Card already opened.";
-		} else throw "Invalid coordinates.";
+		} 
+		return 0;
 	}
 
 	void readCoords(int *x, int *y) {
 		while (true) {
-			try {
-				int inputX, inputY;
+			int inputX, inputY;
 				
-				if (!(std::cin >> inputX >> inputY))
-					throw "Nan found";
-
-				*x = inputX - 1;
-				*y = height - inputY;
-				break;
-			} catch (const char* e) {
+			if (!(std::cin >> inputX >> inputY)) {
 				std::cin.clear();
 	      std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-				std::cout << e << " Please use numbers instead of text";
+				std::cout << "Nan found. Please use numbers instead of text: ";
+				continue;
 			}
+				
+			*x = inputX - 1;
+			*y = height - inputY;
+			break;
 		}
 	}
 
 	int pickSecondCard(int x1, int y1, int *x2, int *y2) {
 		while (true) {
-			readCoords(&*x2, &*y2);
+			readCoords(x2, y2);
 
 			if (*x2 == x1 && *y2 == y1) {
 				std::cout << "The coordinates of the cards are equal, please enter different coordinates: ";
 				continue;
 			}
 
-			try {
-				return turnOverCard(*x2, *y2);
-			} catch (const char* e) {
-				std::cout << e << " Please enter another coordinates: ";
+			int cardVal = turnOverCard(*x2, *y2);
+			if (cardVal == 0) {
+				std::cout << "Card already opened or coordinates are invalid. Please enter another coordinates: " << "\n";
+				continue;
 			}
+			return cardVal;
 		}
 	}
 
 public:
   // the function to run the round
 	bool pickCards() {
-		std::cout << "Enter coordinates of the first card: ";
-		
-		int x1, y1;
-		readCoords(&x1, &y1);
-		int card1;
+		while (true) {
+			std::cout << "Enter coordinates of the first card: ";
+			
+			int x1, y1;
+			readCoords(&x1, &y1);
+			int card1;
 
-		try {
+
 			card1 = turnOverCard(x1, y1);
-		} catch (const char* e) {
-			std::cout << e << "\n";
-			return pickCards();
-		} 
-		
-		clearScreen();
+			if (card1 == 0) {
+				std::cout << "Card already opened or coordinates are invalid. Please enter another coordinates" << "\n";
+				continue;
+			}
+			
+			clearScreen();
 
-		observableField[y1][x1] = gameField[y1][x1];
-		std::cout << "Coordinates of the card: " << translateX(x1) << " " << translateY(y1) << "\n";
-		printActualGameField();
+			observableField[y1][x1] = gameField[y1][x1];
+			std::cout << "Coordinates of the card: " << translateX(x1) << " " << translateY(y1) << "\n";
+			printObservableField();
 
-		std::cout << "Enter coordinates of the second card: ";
-		int x2, y2;
-		int card2 = pickSecondCard(x1, y1, &x2, &y2);
-		clearScreen();
-		
-		observableField[y2][x2] = gameField[y2][x2];
-		std::cout << "Coordinates of the first card: " << translateX(x1) << " " << translateY(y1) << "\n";
-		std::cout << "Coordinates of the second card: " << translateX(x2) << " " << translateY(y2) << "\n";
-		printActualGameField();
+			std::cout << "Enter coordinates of the second card: ";
+			int x2, y2;
+			int card2 = pickSecondCard(x1, y1, &x2, &y2);
+			clearScreen();
+			
+			observableField[y2][x2] = gameField[y2][x2];
+			std::cout << "Coordinates of the first card: " << translateX(x1) << " " << translateY(y1) << "\n";
+			std::cout << "Coordinates of the second card: " << translateX(x2) << " " << translateY(y2) << "\n";
+			printObservableField();
 
-		// TODO: remove card after it's found
-		if (card1 == card2) {
-			std::cout << "Congradulations! The cards are equal!" << "\n";
-			cardsLeft -= 1;
-			if (cardsLeft == 0)
-				return true;
-			return false;
-		} else {
-			observableField[y1][x1] = 0;
-			observableField[y2][x2] = 0;
-			std::cout << "The cards differ!" << "\n";
-			return false;
+			if (card1 == card2) {
+				std::cout << "Congratulations! The cards are equal!" << "\n";
+				cardsLeft -= 1;
+				if (cardsLeft == 0)
+					return true;
+				return false;
+			} else {
+				observableField[y1][x1] = 0;
+				observableField[y2][x2] = 0;
+				std::cout << "The cards differ!" << "\n";
+				return false;
+			}
 		}
-
 	}
 };
 
@@ -221,19 +276,16 @@ bool playAgain() {
 
 int inputLimit() {
 	while (true) {
-		try {
-			int input;
-			if (!(std::cin >> input)) {
-				std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-				throw "Text entered instead of numbers.";
-			}
-			std::cout << "\n";
-
-			return input;
-		} catch (const char* e) {
-			std::cout << e << " Please use numbers: ";
+		int input;
+		if (!(std::cin >> input)) {
+			std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+			std::cout << "Text entered instead of numbers. Please use numbers: ";
+			continue;
 		}
+		std::cout << "\n";
+
+		return input;
 	}
 }
 
@@ -256,8 +308,7 @@ bool execute(Field field, int limit) {
 	return false;
 }
 
-int main()
-{
+int main() {
 	// random seed init
 	srand(static_cast<unsigned int>(time(0)));
 
